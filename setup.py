@@ -299,7 +299,8 @@ def configure(platform, build_type):
   print("Python version: {}\n".format(sys.version))
   if version_info > (3, 0):
     # Build a Python 3.x library
-    PY_VER = "-DBINDING_BUILD=Python3.8"
+    PY_VER = "-DBINDING_BUILD=Python3"
+    #PY_VER = "-DBINDING_BUILD=Python3.8"
   else:
     # Build a Python 2.7 library
     PY_VER = "-DBINDING_BUILD=Python2"
