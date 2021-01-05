@@ -380,6 +380,7 @@ Argument output An SDR representing the winning columns after
 	    std::copy(perm.begin(), perm.end(), get_it<Real>(x)); //TODO pass-by-value here only for compatibility, could have just returned perm 
 	    return perm;
         },
+
 	"",
 	py::arg("column"),
 	py::arg("x"),
@@ -407,8 +408,8 @@ Argument output An SDR representing the winning columns after
         auto inhibitColumns_func = [](SpatialPooler& self, py::array& overlaps)
         {
             std::vector<htm::Real> overlapsVector(get_it<Real>(overlaps), get_end<Real>(overlaps));
-            std::vector<htm::UInt> activeColumnsVector;
-            self.inhibitColumns_(overlapsVector);
+            //std::vector<htm::UInt> activeColumnsVector;
+            auto activeColumnsVector = self.inhibitColumns_(overlapsVector);
 
             return py::array_t<UInt>( activeColumnsVector.size(), activeColumnsVector.data());
         };
@@ -429,6 +430,16 @@ Argument output An SDR representing the winning columns after
                 return buf.str(); });
 
         py_SpatialPooler.def_property_readonly("connections", &SpatialPooler::getConnections, "SP's internal connections (read-only) Warning: the Connections is subject to change.");
+        /*
+            This function is needed by UnionTemporalPooler which is an extention to SpatialPooler
+        */
+        // updateLearning        
+        py_SpatialPooler.def("updateLearning", [](SpatialPooler& self, py::array& overlaps, SDR& active)        
+        {            
+            std::vector<UInt16> overlapsVector(get_it<UInt16>(overlaps), get_end<UInt16>(overlaps));
+            self.updateLearning(overlapsVector, active);
+        });
+        
 
         // pickle
         py_SpatialPooler.def(py::pickle(
@@ -461,8 +472,7 @@ Argument output An SDR representing the winning columns after
 	    * See: https://pybind11.readthedocs.io/en/stable/advanced/classes.html#custom-constructors
 	    */
             return sp;
-        }));
-				
-
+        }));		
+        
     }
 } // namespace htm_ext

@@ -502,6 +502,16 @@ const vector<SynapseIdx> SpatialPooler::compute(const SDR &input, const bool lea
 }
 
 
+void SpatialPooler::updateLearning(vector<SynapseIdx> &overlaps, SDR &active) {  
+    updateDutyCycles_(overlaps, active);
+    bumpUpWeakColumns_();
+    updateBoostFactors_();
+    if (isUpdateRound_()) {
+      updateInhibitionRadius_();
+      updateMinDutyCycles_();
+    }
+}
+
 void SpatialPooler::boostOverlaps_(const vector<SynapseIdx> &overlaps, //TODO use Eigen sparse vector here
                                    vector<Real> &boosted) const {
   if(boostStrength_ < htm::Epsilon) { //boost ~ 0.0, we can skip these computations, just copy the data
@@ -837,6 +847,8 @@ vector<CellIdx> SpatialPooler::inhibitColumns_(const vector<Real> &overlaps) con
     density = min(density, (Real)MAX_LOCALAREADENSITY);
   }
   NTA_ASSERT(density > 0.0f and density < 1.0f);
+  const UInt numDesired = static_cast<UInt>((density * numColumns_));
+  
 
   if (globalInhibition_ ||
       inhibitionRadius_ > *max_element(columnDimensions_.begin(), columnDimensions_.end())) {
@@ -875,6 +887,7 @@ vector<CellIdx> SpatialPooler::inhibitColumnsGlobal_(const vector<Real> &overlap
   activeColumns.resize(numDesired);
   // Finish sorting the winner columns by their overlap.
   std::sort(activeColumns.begin(), activeColumns.end(), compare);
+  
   // Remove sub-threshold winners
   while( !activeColumns.empty() &&
          overlaps[activeColumns.back()] < stimulusThreshold_) {

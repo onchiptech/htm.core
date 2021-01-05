@@ -785,12 +785,18 @@ public:
    */
   const vector<Real> &getBoostedOverlaps() const;
 
+  void updateLearning(vector<SynapseIdx> &overlaps, SDR &active);
+  
   ///////////////////////////////////////////////////////////
   //
   // Implementation methods. all methods below this line are
   // NOT part of the public API
 
-
+  /**
+      This function is needed by UnionTemporalPooler which is an extention to SpatialPooler
+  */
+  
+  
   void boostOverlaps_(const vector<SynapseIdx> &overlaps, vector<Real> &boostedOverlaps) const;
 
   /**
